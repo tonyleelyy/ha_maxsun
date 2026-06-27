@@ -127,6 +127,8 @@ After copying the whole `publish\` directory to the target machine, run this fro
 
 The program prefers HAL files from `publish\vendor\`. COM components still need to be registered once on the target machine, so run `register-vendor-runtime.ps1` before installing the service.
 
+The repository includes [vendor/README.md](vendor/README.md) as a directory layout note. If you do have redistribution rights for the vendor DLLs, you can use that layout for a private package or release; the public GitHub repository does not include those proprietary DLLs by default.
+
 ### 7. Edit Configuration
 
 Edit `publish\appsettings.json`:
