@@ -64,6 +64,15 @@ foreach ($path in $vendorPaths) {
     Write-Check $path (Test-Path $path) ($(if (Test-Path $path) { "Found" } else { "Missing" }))
 }
 
+$bundledVendor = Join-Path $root "publish\vendor"
+$bundledPaths = @(
+    (Join-Path $bundledVendor "ASUS\AuraSDK"),
+    (Join-Path $bundledVendor "MaxSun\LightControlModule\Aac_MaxSunEneLight"),
+    (Join-Path $bundledVendor "ENE\Aac_ENE RGB HAL\x64")
+)
+$bundledReady = ($bundledPaths | Where-Object { Test-Path $_ }).Count -eq $bundledPaths.Count
+Write-Check "Bundled vendor runtime" $bundledReady ($(if ($bundledReady) { $bundledVendor } else { "Not collected; optional. Run scripts\collect-vendor-runtime.ps1 to create publish\vendor." }))
+
 $asusAura = Resolve-ProgIdClsid "asus.aura"
 Write-Check "COM ProgID asus.aura" ($null -ne $asusAura) ($(if ($asusAura) { $asusAura } else { "Not registered" }))
 

@@ -108,7 +108,26 @@ Run this from the repository root:
 
 Build output is written to `publish\`. If `publish\appsettings.json` does not exist, the script copies it from [appsettings.example.json](appsettings.example.json).
 
-### 6. Edit Configuration
+### 6. Optional: Create a Local Vendor Runtime
+
+This GitHub repository does not include proprietary Maxsun, ASUS, or ENE DLLs. If you want a target machine to run without installing MaxsunSync2 first, collect the local runtime on a machine that already has those components:
+
+```powershell
+.\scripts\collect-vendor-runtime.ps1
+```
+
+The script copies the required components to `publish\vendor\` and copies portable install scripts to `publish\`. `publish\vendor\` is ignored by `.gitignore`; do not commit or publicly redistribute those vendor files unless you have the right to do so.
+
+After copying the whole `publish\` directory to the target machine, run this from an elevated PowerShell inside `publish\`:
+
+```powershell
+.\register-vendor-runtime.ps1
+.\install-service.ps1
+```
+
+The program prefers HAL files from `publish\vendor\`. COM components still need to be registered once on the target machine, so run `register-vendor-runtime.ps1` before installing the service.
+
+### 7. Edit Configuration
 
 Edit `publish\appsettings.json`:
 
@@ -127,7 +146,7 @@ If your Home Assistant endpoint uses HTTPS, use:
 wss://your-ha-host:8123/api/websocket
 ```
 
-### 7. Check Environment and HA Entities
+### 8. Check Environment and HA Entities
 
 ```powershell
 .\scripts\check-environment.ps1
@@ -136,7 +155,7 @@ wss://your-ha-host:8123/api/websocket
 
 `check-environment.ps1` checks .NET, HAL directories, COM registration, MaxsunSync conflicts, and the config file. `check-ha.ps1` checks whether the HA helper/template light entities exist.
 
-### 8. Hardware Test
+### 9. Hardware Test
 
 Run from an elevated PowerShell:
 
@@ -146,7 +165,7 @@ Run from an elevated PowerShell:
 
 The script tests red, green, blue, low-brightness white, and off. You can visually confirm each step.
 
-### 9. Install and Start the Windows Service
+### 10. Install and Start the Windows Service
 
 Run from the repository root:
 
@@ -174,7 +193,7 @@ View logs:
 Get-Content .\publish\logs\bridge-$(Get-Date -Format yyyyMMdd).log -Tail 80
 ```
 
-### 10. Uninstall the Service
+### 11. Uninstall the Service
 
 ```powershell
 .\scripts\uninstall-service.ps1

@@ -2,6 +2,7 @@ bin/
 obj/
 publish/
 logs/
+vendor/
 appsettings.json
 *.user
 *.suo

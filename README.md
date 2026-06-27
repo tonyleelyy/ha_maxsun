@@ -108,7 +108,26 @@ homeassistant:
 
 构建结果会输出到 `publish\`。如果 `publish\appsettings.json` 不存在，脚本会从 [appsettings.example.json](appsettings.example.json) 复制一份。
 
-### 6. 编辑配置
+### 6. 可选：制作本地 vendor runtime
+
+GitHub 仓库不会包含铭瑄、ASUS、ENE 的闭源 DLL。如果你希望目标机器不先安装 MaxsunSync2，可以在一台已经有这些组件的机器上收集本地运行时：
+
+```powershell
+.\scripts\collect-vendor-runtime.ps1
+```
+
+脚本会把必要组件复制到 `publish\vendor\`，并把可携带安装脚本复制到 `publish\`。`publish\vendor\` 已被 `.gitignore` 忽略，请不要提交或公开分发这些厂商文件，除非你有权这样做。
+
+把整个 `publish\` 目录复制到目标机器后，用管理员 PowerShell 在 `publish\` 目录里运行：
+
+```powershell
+.\register-vendor-runtime.ps1
+.\install-service.ps1
+```
+
+程序会优先使用 `publish\vendor\` 里的 HAL 文件。COM 组件仍然需要在目标机器注册一次，所以要先运行 `register-vendor-runtime.ps1`。
+
+### 7. 编辑配置
 
 编辑 `publish\appsettings.json`：
 
@@ -127,7 +146,7 @@ homeassistant:
 wss://your-ha-host:8123/api/websocket
 ```
 
-### 7. 检查环境和 HA 实体
+### 8. 检查环境和 HA 实体
 
 ```powershell
 .\scripts\check-environment.ps1
@@ -136,7 +155,7 @@ wss://your-ha-host:8123/api/websocket
 
 `check-environment.ps1` 会检查 .NET、HAL 目录、COM 注册、MaxsunSync 冲突和配置文件。`check-ha.ps1` 会检查 HA helper/template light 是否存在。
 
-### 8. 硬件测试
+### 9. 硬件测试
 
 用管理员 PowerShell 运行：
 
@@ -146,7 +165,7 @@ wss://your-ha-host:8123/api/websocket
 
 它会依次测试红、绿、蓝、低亮度白、关闭。每一步都可以人工确认主板灯是否变化。
 
-### 9. 安装并启动 Windows Service
+### 10. 安装并启动 Windows Service
 
 在项目根目录运行：
 
@@ -174,7 +193,7 @@ Get-Service ha_maxsun
 Get-Content .\publish\logs\bridge-$(Get-Date -Format yyyyMMdd).log -Tail 80
 ```
 
-### 10. 卸载服务
+### 11. 卸载服务
 
 ```powershell
 .\scripts\uninstall-service.ps1

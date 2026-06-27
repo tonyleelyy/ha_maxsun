@@ -5,8 +5,19 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$root = Split-Path -Parent $PSScriptRoot
-$logDir = Join-Path $root "publish\logs"
+$scriptDir = $PSScriptRoot
+$scriptIsInPublish = Test-Path (Join-Path $scriptDir "ha_maxsun.dll")
+$root = if ($scriptIsInPublish) { $scriptDir } else { Split-Path -Parent $scriptDir }
+$publish = if ([IO.Path]::IsPathRooted($PublishDirectory)) {
+    $PublishDirectory
+}
+elseif ($scriptIsInPublish -and $PublishDirectory -eq "publish") {
+    $scriptDir
+}
+else {
+    Join-Path $root $PublishDirectory
+}
+$logDir = Join-Path $publish "logs"
 $installLog = Join-Path $logDir "install-service.log"
 
 function Test-Administrator {
@@ -65,7 +76,6 @@ if ($ElevatedChild) {
 }
 
 try {
-$publish = if ([IO.Path]::IsPathRooted($PublishDirectory)) { $PublishDirectory } else { Join-Path $root $PublishDirectory }
 $exe = Join-Path $publish "ha_maxsun.exe"
 $dll = Join-Path $publish "ha_maxsun.dll"
 $config = Join-Path $publish "appsettings.json"
@@ -82,8 +92,13 @@ else {
 }
 
 if (-not (Test-Path $config)) {
-    Copy-Item (Join-Path $root "appsettings.example.json") $config
-    throw "Created $config. Edit it before installing the service."
+    $exampleConfig = Join-Path $root "appsettings.example.json"
+    if (Test-Path $exampleConfig) {
+        Copy-Item $exampleConfig $config
+        throw "Created $config. Edit it before installing the service."
+    }
+
+    throw "Configuration file not found: $config. Copy appsettings.example.json to this directory and edit it before installing the service."
 }
 
 $existing = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
