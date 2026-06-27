@@ -2,49 +2,38 @@
 
 [English](README.en.md)
 
-[![Platform](https://img.shields.io/badge/platform-Windows%20x64-blue)](#安装前提)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-WebSocket-41BDF5)](#配置-home-assistant)
+[![Platform](https://img.shields.io/badge/platform-Windows%20x64-blue)](#一键安装)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-WebSocket-41BDF5)](#1-配置-home-assistant)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 把铭瑄主板 RGB 灯接入 Home Assistant 的 Windows 后台桥接服务。调用 ASUS Aura / ENE / Maxsun 底层 HAL 和驱动。
+
+```
+目前仅在MS-Terminator（终结者）B760M D4 WIFI/WIFI6/WIFI6E主板中测试。
+```
+
+
 
 ## 功能
 
 - 在 Home Assistant 里显示为一个灯实体：`light.maxsun_motherboard_rgb`
 - 支持开关、RGB 颜色、调整亮度
 
-## 安装步骤
+## 一键安装
 
-下面的命令默认都在仓库根目录运行，也就是 clone 后的 `ha_maxsun` 目录，不要在 `homeassistant` 子目录里运行。
+推荐下载 GitHub Release 压缩包，解压到固定目录，例如 `D:\ha_maxsun`。如果你是从源码 clone，本向导也会在缺少 `publish\` 输出时尝试自动构建。
 
-### 1. 安装前提
-
-需要：
+安装前需要：
 
 - Windows x64
-- 安装[铭瑄 RGB 软件](https://www.maxsun.com.cn/2024/1024/6320.html)或对应驱动包，用于提供 ASUS/ENE/Maxsun HAL
-- .NET 10 SDK，用于正常构建
+- 安装[铭瑄 RGB 软件](https://www.maxsun.com.cn/2024/1024/6320.html)或对应驱动包（无需开机自启），用于提供 ASUS/ENE/Maxsun HAL
 - Home Assistant long-lived access token
-- 管理员权限，用于硬件测试和安装 Windows Service
+- 管理员权限
+- 从源码自动构建时需要 .NET 10 SDK；Release 包用户不需要自己构建
 
-### 2. 停止铭瑄同步程序
+### 1. 配置 Home Assistant
 
-本桥接服务会拒绝和铭瑄官方同步程序抢硬件控制。先停止服务：
-
-```powershell
-Stop-Process -Name MaxsunSync2 -ErrorAction SilentlyContinue
-Stop-Service -Name MaxsunSyncService -ErrorAction SilentlyContinue
-```
-
-可选：把 `MaxsunSyncService` 改为手动启动。
-
-```powershell
-Set-Service -Name MaxsunSyncService -StartupType Manual
-```
-
-### 3. 配置 Home Assistant
-
-把 [homeassistant/maxsun_motherboard_rgb.yaml](homeassistant/maxsun_motherboard_rgb.yaml) 放进 Home Assistant 的 packages 目录（没有则新建文件夹）。之后在configuration.yaml里添加：
+把 [homeassistant/maxsun_motherboard_rgb.yaml](homeassistant/maxsun_motherboard_rgb.yaml) 放进 Home Assistant 的 packages 目录（没有则新建文件夹）。之后在 `configuration.yaml` 里添加：
 
 ```yaml
 homeassistant:
@@ -53,110 +42,44 @@ homeassistant:
 
 重启 Home Assistant。
 
-应该出现这些 helper：
+应该出现这些 helper 和灯实体：
 
 - `input_boolean.maxsun_motherboard_rgb_power`
 - `input_number.maxsun_motherboard_rgb_brightness`
 - `input_text.maxsun_motherboard_rgb_color`
 - `input_boolean.maxsun_motherboard_rgb_available`
-
-最终 UI 灯实体是：
-
 - `light.maxsun_motherboard_rgb`
 
-### 4. 获取 Home Assistant token
+token 获取方式：在 Home Assistant 左下角点你的用户名，进入个人资料页，拉到最下面的 Long-lived access tokens，新建一个 token。复制后只保存到本机配置文件里，不要提交到 GitHub。
 
-在 Home Assistant 左下角点你的用户名，进入个人资料页，拉到最下面的 Long-lived access tokens，新建一个 token。复制后只保存到本机配置文件里，不要提交到 GitHub。
+### 2. 运行安装向导
 
-### 5. 构建
-
-在项目目录执行：
-
-```powershell
-.\scripts\build.ps1
-```
-
-构建结果会输出到 `publish\`。如果 `publish\appsettings.json` 不存在，脚本会从 [appsettings.example.json](appsettings.example.json) 复制一份。
-
-### 6. 编辑配置
-
-编辑 `publish\appsettings.json`：
-
-```json
-{
-  "homeAssistant": {
-    "webSocketUrl": "ws://homeassistant.local:8123/api/websocket",
-    "longLivedAccessToken": "REPLACE_ME"
-  }
-}
-```
-
-如果你的 Home Assistant 使用 HTTPS，请改成：
+在解压后的项目根目录双击：
 
 ```text
-wss://your-ha-host:8123/api/websocket
+install.bat
 ```
 
-### 7. 检查环境和 HA 实体
+如果弹出 UAC，请允许管理员权限。向导会自动完成：
+
+- 没有 `publish\` 输出时尝试自动构建
+- 创建或更新 `publish\appsettings.json`
+- 如果没有填 Home Assistant 地址和 token，就在窗口里询问并写入配置
+- 停止 `MaxsunSync2` / `MaxsunSyncService`，并把 `MaxsunSyncService` 改为手动启动
+- 检查本机环境和 Home Assistant 实体
+- 依次测试红、绿、蓝、低亮度白、关闭，并让你确认主板灯是否变化
+- 安装并启动 `ha_maxsun` Windows Service
+
+安装完成后，Home Assistant 里控制 `light.maxsun_motherboard_rgb` 即可。
+
+## 服务管理
 
 ```powershell
-.\scripts\check-environment.ps1
-.\scripts\check-ha.ps1
+Get-Service ha_maxsun #查看状态
+Restart-Service ha_maxsun #重启服务
+Stop-Service ha_maxsun #停止服务
+Start-Service ha_maxsun #启动服务
 ```
-
-`check-environment.ps1` 会检查 .NET、HAL 目录、COM 注册、MaxsunSync 冲突和配置文件。`check-ha.ps1` 会检查 HA helper/template light 是否存在。
-
-### 8. 硬件测试
-
-用管理员 PowerShell 运行：
-
-```powershell
-.\scripts\test-hardware.ps1 -ConfirmEachStep
-```
-
-它会依次测试红、绿、蓝、低亮度白、关闭。每一步都可以人工确认主板灯是否变化。
-
-### 9. 安装并启动 Windows Service
-
-在项目根目录运行：
-
-```powershell
-.\scripts\install-service.ps1
-```
-
-安装完成后：
-
-- 服务名：`ha_maxsun`
-- 运行账户：`LocalSystem`
-- 启动类型：`Automatic`
-- 安装后会立即启动
-- 之后开机会自动启动
-
-查看服务状态：
-
-```powershell
-Get-Service ha_maxsun
-```
-
-重启服务：
-
-```powershell
-Restart-Service ha_maxsun
-```
-
-停止服务：
-
-```powershell
-Stop-Service ha_maxsun
-```
-
-启动服务：
-
-```powershell
-Start-Service ha_maxsun
-```
-
-也可以使用 Windows 服务管理器管理。
 
 查看日志：
 
@@ -164,31 +87,18 @@ Start-Service ha_maxsun
 Get-Content .\publish\logs\bridge-$(Get-Date -Format yyyyMMdd).log -Tail 80
 ```
 
-### 10. 卸载服务
+卸载服务：
 
 ```powershell
 .\scripts\uninstall-service.ps1
 ```
-
-如果没有管理员权限，请用管理员 PowerShell 运行。
 
 ## 更新版本
 
-如果你已经安装过服务，建议这样更新：
+下载新版 Release 压缩包，停止服务后覆盖原目录，再运行 `install.bat`。向导会自动卸载旧服务并重新安装。
 
 ```powershell
 Stop-Service ha_maxsun
-#重新克隆本仓库
-.\scripts\build.ps1
-Start-Service ha_maxsun
-```
-
-如果服务的启动命令或安装脚本有变化，可以卸载后重装：
-
-```powershell
-.\scripts\uninstall-service.ps1
-.\scripts\build.ps1
-.\scripts\install-service.ps1
 ```
 
 ## 项目结构

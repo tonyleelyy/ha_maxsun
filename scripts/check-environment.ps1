@@ -36,11 +36,26 @@ function Resolve-ProgIdClsid {
     return $null
 }
 
-$sdks = @(dotnet --list-sdks)
-Write-Check ".NET SDK" ($sdks.Count -gt 0) ($(if ($sdks.Count -gt 0) { $sdks -join "; " } else { "No SDK found; build/publish requires .NET 10 SDK." }))
+$publishDirectory = Split-Path -Parent $config
+$bridgeExe = Join-Path $publishDirectory "ha_maxsun.exe"
+$bridgeDll = Join-Path $publishDirectory "ha_maxsun.dll"
+$hasBridgeExe = Test-Path $bridgeExe
+$hasBridgeDll = Test-Path $bridgeDll
+$dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
 
-$net10Runtime = @(dotnet --list-runtimes | Where-Object { $_ -match '^Microsoft\.NETCore\.App\s+10\.' })
-Write-Check ".NET 10 runtime" ($net10Runtime.Count -gt 0) ($(if ($net10Runtime.Count -gt 0) { $net10Runtime -join "; " } else { "No Microsoft.NETCore.App 10.x runtime found." }))
+if ($dotnetCommand) {
+    $sdks = @(dotnet --list-sdks)
+    Write-Check ".NET SDK" ($sdks.Count -gt 0 -or $hasBridgeExe) ($(if ($sdks.Count -gt 0) { $sdks -join "; " } elseif ($hasBridgeExe) { "Not installed; not required when using ha_maxsun.exe from a release package." } else { "No SDK found; source build/publish requires .NET 10 SDK." }))
+
+    $net10Runtime = @(dotnet --list-runtimes | Where-Object { $_ -match '^Microsoft\.NETCore\.App\s+10\.' })
+    Write-Check ".NET 10 runtime" ($net10Runtime.Count -gt 0 -or $hasBridgeExe) ($(if ($net10Runtime.Count -gt 0) { $net10Runtime -join "; " } elseif ($hasBridgeExe) { "Not required when using ha_maxsun.exe from a release package." } else { "No Microsoft.NETCore.App 10.x runtime found." }))
+}
+else {
+    Write-Check ".NET SDK" $hasBridgeExe ($(if ($hasBridgeExe) { "dotnet command not found; not required when using ha_maxsun.exe from a release package." } else { "dotnet command not found; source build or framework-dependent DLL output cannot run." }))
+    Write-Check ".NET 10 runtime" $hasBridgeExe ($(if ($hasBridgeExe) { "dotnet command not found; not required when using ha_maxsun.exe from a release package." } else { "dotnet command not found; ha_maxsun.dll requires .NET 10 runtime." }))
+}
+
+Write-Check "Bridge executable" ($hasBridgeExe -or $hasBridgeDll) ($(if ($hasBridgeExe) { $bridgeExe } elseif ($hasBridgeDll) { $bridgeDll } else { "Not found; run install.bat from a release package or build from source." }))
 
 $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
 $csc = $null

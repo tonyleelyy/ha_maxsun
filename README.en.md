@@ -2,47 +2,34 @@
 
 [简体中文](README.md)
 
-[![Platform](https://img.shields.io/badge/platform-Windows%20x64-blue)](#prerequisites)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-WebSocket-41BDF5)](#configure-home-assistant)
+[![Platform](https://img.shields.io/badge/platform-Windows%20x64-blue)](#one-click-install)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-WebSocket-41BDF5)](#1-configure-home-assistant)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A Windows background bridge that connects Maxsun motherboard RGB lighting to Home Assistant. It uses the ASUS Aura / ENE / Maxsun low-level HAL and driver stack.
+
+```
+Currently tested only on MS-Terminator B760M D4 WIFI/WIFI6/WIFI6E motherboards.
+```
 
 ## Features
 
 - Exposes one Home Assistant light entity: `light.maxsun_motherboard_rgb`
 - Supports power, RGB color, and brightness control
 
-## Installation
+## One-Click Install
 
-Run the commands below from the repository root, usually the cloned `ha_maxsun` directory. Do not run them from the `homeassistant` subdirectory.
-
-### 1. Prerequisites
+Download the GitHub Release zip and extract it to a stable directory, for example `D:\ha_maxsun`. If you cloned the source tree instead, the setup wizard will try to build `publish\` automatically when it is missing.
 
 You need:
 
 - Windows x64
-- [Maxsun RGB software](https://www.maxsun.com.cn/2024/1024/6320.html) or an equivalent driver package installed, to provide ASUS/ENE/Maxsun HAL components
-- .NET 10 SDK for normal builds
+- [Maxsun RGB software](https://www.maxsun.com.cn/2024/1024/6320.html) or an equivalent driver package installed, without requiring it to start with Windows, to provide ASUS/ENE/Maxsun HAL components
 - Home Assistant long-lived access token
-- Administrator privileges for hardware testing and Windows Service installation
+- Administrator privileges
+- .NET 10 SDK only when building automatically from source; Release zip users do not need to build
 
-### 2. Stop Maxsun Sync
-
-This bridge refuses to compete with the official Maxsun sync process for hardware control. Stop it first:
-
-```powershell
-Stop-Process -Name MaxsunSync2 -ErrorAction SilentlyContinue
-Stop-Service -Name MaxsunSyncService -ErrorAction SilentlyContinue
-```
-
-Optionally set `MaxsunSyncService` to manual startup:
-
-```powershell
-Set-Service -Name MaxsunSyncService -StartupType Manual
-```
-
-### 3. Configure Home Assistant
+### 1. Configure Home Assistant
 
 Copy [homeassistant/maxsun_motherboard_rgb.yaml](homeassistant/maxsun_motherboard_rgb.yaml) into your Home Assistant packages directory. Create the directory if it does not exist. Then add this to `configuration.yaml`:
 
@@ -53,110 +40,44 @@ homeassistant:
 
 Restart Home Assistant.
 
-These helper entities should appear:
+These helper entities and the final light should appear:
 
 - `input_boolean.maxsun_motherboard_rgb_power`
 - `input_number.maxsun_motherboard_rgb_brightness`
 - `input_text.maxsun_motherboard_rgb_color`
 - `input_boolean.maxsun_motherboard_rgb_available`
-
-The final UI light entity is:
-
 - `light.maxsun_motherboard_rgb`
 
-### 4. Create a Home Assistant Token
+To create a token, click your user name in the lower-left corner of Home Assistant, open your profile page, scroll to Long-lived access tokens, and create one. Store it only in the local config file. Do not commit it to GitHub.
 
-In Home Assistant, click your user name in the lower-left corner, open your profile page, scroll to Long-lived access tokens, and create a token. Store it only in the local config file. Do not commit it to GitHub.
+### 2. Run the Setup Wizard
 
-### 5. Build
-
-Run this from the repository root:
-
-```powershell
-.\scripts\build.ps1
-```
-
-Build output is written to `publish\`. If `publish\appsettings.json` does not exist, the script copies it from [appsettings.example.json](appsettings.example.json).
-
-### 6. Edit Configuration
-
-Edit `publish\appsettings.json`:
-
-```json
-{
-  "homeAssistant": {
-    "webSocketUrl": "ws://homeassistant.local:8123/api/websocket",
-    "longLivedAccessToken": "REPLACE_ME"
-  }
-}
-```
-
-If your Home Assistant endpoint uses HTTPS, use:
+Double-click this file from the extracted project root:
 
 ```text
-wss://your-ha-host:8123/api/websocket
+install.bat
 ```
 
-### 7. Check Environment and HA Entities
+Approve the UAC prompt if Windows asks for administrator privileges. The wizard will:
+
+- Try to build the project if `publish\` output is missing
+- Create or update `publish\appsettings.json`
+- Ask for the Home Assistant address and token if they are not configured yet
+- Stop `MaxsunSync2` / `MaxsunSyncService`, and set `MaxsunSyncService` to manual startup
+- Check the local environment and Home Assistant entities
+- Test red, green, blue, low-brightness white, and off, asking you to confirm each visible change
+- Install and start the `ha_maxsun` Windows Service
+
+After setup finishes, control `light.maxsun_motherboard_rgb` in Home Assistant.
+
+## Service Management
 
 ```powershell
-.\scripts\check-environment.ps1
-.\scripts\check-ha.ps1
+Get-Service ha_maxsun # Check status
+Restart-Service ha_maxsun # Restart service
+Stop-Service ha_maxsun # Stop service
+Start-Service ha_maxsun # Start service
 ```
-
-`check-environment.ps1` checks .NET, HAL directories, COM registration, MaxsunSync conflicts, and the config file. `check-ha.ps1` checks whether the HA helper/template light entities exist.
-
-### 8. Hardware Test
-
-Run from an elevated PowerShell:
-
-```powershell
-.\scripts\test-hardware.ps1 -ConfirmEachStep
-```
-
-The script tests red, green, blue, low-brightness white, and off. You can visually confirm each step.
-
-### 9. Install and Start the Windows Service
-
-Run from the repository root:
-
-```powershell
-.\scripts\install-service.ps1
-```
-
-After installation:
-
-- Service name: `ha_maxsun`
-- Account: `LocalSystem`
-- Startup type: `Automatic`
-- The service starts immediately after installation
-- The service starts automatically after reboot
-
-Check service status:
-
-```powershell
-Get-Service ha_maxsun
-```
-
-Restart the service:
-
-```powershell
-Restart-Service ha_maxsun
-```
-
-Stop the service:
-
-```powershell
-Stop-Service ha_maxsun
-```
-
-Start the service:
-
-```powershell
-Start-Service ha_maxsun
-```
-
-You can also manage it from Windows Services.
 
 View logs:
 
@@ -164,31 +85,18 @@ View logs:
 Get-Content .\publish\logs\bridge-$(Get-Date -Format yyyyMMdd).log -Tail 80
 ```
 
-### 10. Uninstall the Service
+Uninstall the service:
 
 ```powershell
 .\scripts\uninstall-service.ps1
 ```
-
-If you do not have administrator privileges, run it from an elevated PowerShell.
 
 ## Updating
 
-If the service is already installed, update with:
+Download the new Release zip, stop the service, overwrite the old directory, and run `install.bat` again. The wizard will remove and reinstall the service.
 
 ```powershell
 Stop-Service ha_maxsun
-# Re-clone this repository
-.\scripts\build.ps1
-Start-Service ha_maxsun
-```
-
-If the service command line or install script changed, uninstall and reinstall:
-
-```powershell
-.\scripts\uninstall-service.ps1
-.\scripts\build.ps1
-.\scripts\install-service.ps1
 ```
 
 ## Project Layout
