@@ -27,7 +27,7 @@ template:
         unique_id: maxsun_motherboard_rgb
         availability: "{{ is_state('input_boolean.maxsun_motherboard_rgb_available', 'on') }}"
         state: "{{ is_state('input_boolean.maxsun_motherboard_rgb_power', 'on') }}"
-        level: "{{ states('input_number.maxsun_motherboard_rgb_brightness') | int(255) }}"
+        level: "{{ states('input_number.maxsun_motherboard_rgb_brightness') | float(255) | round(0) | int }}"
         rgb: >
           {% set parts = states('input_text.maxsun_motherboard_rgb_color').split(',') %}
           [{{ parts[0] | int(255) }}, {{ parts[1] | int(255) }}, {{ parts[2] | int(255) }}]
@@ -39,7 +39,7 @@ template:
             target:
               entity_id: input_number.maxsun_motherboard_rgb_brightness
             data:
-              value: "{{ brightness | default(states('input_number.maxsun_motherboard_rgb_brightness') | int(255), true) }}"
+              value: "{{ brightness | default(states('input_number.maxsun_motherboard_rgb_brightness') | float(255) | round(0) | int, true) }}"
         turn_off:
           - action: input_boolean.turn_off
             target:
@@ -66,4 +66,4 @@ template:
             target:
               entity_id: input_number.maxsun_motherboard_rgb_brightness
             data:
-              value: "{{ brightness | default(states('input_number.maxsun_motherboard_rgb_brightness') | int(255), true) }}"
+              value: "{{ brightness | default(states('input_number.maxsun_motherboard_rgb_brightness') | float(255) | round(0) | int, true) }}"

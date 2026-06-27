@@ -44,6 +44,14 @@ internal static class Program
             AssertEqual(new LightState(true, new RgbColor(10, 20, 30), 64), reducer.Current);
         });
 
+        Test("HA helper brightness accepts input_number decimal state", () =>
+        {
+            var ids = new EntityIds();
+            var reducer = new LightStateAccumulator(ids);
+            AssertTrue(reducer.Update(new EntityState(ids.Brightness, "64.0")));
+            AssertEqual(64, reducer.Current.Brightness);
+        });
+
         Test("HAL protocol serializes apply request", () =>
         {
             var request = HalRequest.Apply(new LightState(true, new RgbColor(1, 2, 3), 42));

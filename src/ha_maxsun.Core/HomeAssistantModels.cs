@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace HaMaxsun.Core;
 
 public sealed class EntityIds
@@ -39,7 +41,7 @@ public sealed class LightStateAccumulator
 
         if (string.Equals(state.EntityId, _entities.Brightness, StringComparison.OrdinalIgnoreCase))
         {
-            if (int.TryParse(state.State, out var brightness))
+            if (TryParseBrightness(state.State, out var brightness))
             {
                 _brightness = ColorMath.ClampByte(brightness);
                 return true;
@@ -57,6 +59,28 @@ public sealed class LightStateAccumulator
             }
 
             return false;
+        }
+
+        return false;
+    }
+
+    private static bool TryParseBrightness(string? state, out int brightness)
+    {
+        brightness = 0;
+        if (string.IsNullOrWhiteSpace(state))
+        {
+            return false;
+        }
+
+        if (int.TryParse(state, NumberStyles.Integer, CultureInfo.InvariantCulture, out brightness))
+        {
+            return true;
+        }
+
+        if (double.TryParse(state, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        {
+            brightness = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            return true;
         }
 
         return false;
