@@ -55,23 +55,14 @@ if (Test-Path $vswhere) {
 }
 Write-Check "Roslyn fallback" ([bool]$csc) ($(if ($csc) { $csc } else { "Not found; scripts\test.ps1 fallback will not work without SDK." }))
 
-$vendorPaths = @(
+$halPaths = @(
     "C:\Program Files\MaxSun\LightControlModule",
     "C:\Program Files\ASUS\AuraSDK",
     "C:\Program Files\ENE"
 )
-foreach ($path in $vendorPaths) {
+foreach ($path in $halPaths) {
     Write-Check $path (Test-Path $path) ($(if (Test-Path $path) { "Found" } else { "Missing" }))
 }
-
-$bundledVendor = Join-Path $root "publish\vendor"
-$bundledPaths = @(
-    (Join-Path $bundledVendor "ASUS\AuraSDK"),
-    (Join-Path $bundledVendor "MaxSun\LightControlModule\Aac_MaxSunEneLight"),
-    (Join-Path $bundledVendor "ENE\Aac_ENE RGB HAL\x64")
-)
-$bundledReady = ($bundledPaths | Where-Object { Test-Path $_ }).Count -eq $bundledPaths.Count
-Write-Check "Bundled vendor runtime" $bundledReady ($(if ($bundledReady) { $bundledVendor } else { "Not collected; optional. Run scripts\collect-vendor-runtime.ps1 to create publish\vendor." }))
 
 $asusAura = Resolve-ProgIdClsid "asus.aura"
 Write-Check "COM ProgID asus.aura" ($null -ne $asusAura) ($(if ($asusAura) { $asusAura } else { "Not registered" }))

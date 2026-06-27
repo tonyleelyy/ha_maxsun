@@ -52,32 +52,6 @@ internal static class Program
             AssertEqual(64, reducer.Current.Brightness);
         });
 
-        Test("HAL options prefer bundled vendor runtime beside config", () =>
-        {
-            var temp = Path.Combine(Path.GetTempPath(), "ha_maxsun.Tests", Guid.NewGuid().ToString("N"));
-            try
-            {
-                var vendor = Path.Combine(temp, "vendor");
-                var aura = Path.Combine(vendor, "ASUS", "AuraSDK");
-                var maxsun = Path.Combine(vendor, "MaxSun", "LightControlModule", "Aac_MaxSunEneLight");
-                var ene = Path.Combine(vendor, "ENE", "Aac_ENE RGB HAL", "x64");
-                Directory.CreateDirectory(aura);
-                Directory.CreateDirectory(maxsun);
-                Directory.CreateDirectory(ene);
-
-                var options = new BridgeOptions();
-                options.Hal.ApplyBundledRuntimePreference(Path.Combine(temp, "appsettings.json"));
-
-                AssertEqual(aura, options.Hal.AuraSdkDirectory);
-                AssertEqual(maxsun, options.Hal.MaxsunHalDirectory);
-                AssertEqual(ene, options.Hal.EneHalDirectory);
-            }
-            finally
-            {
-                TryDeleteDirectory(temp);
-            }
-        });
-
         Test("HAL protocol serializes apply request", () =>
         {
             var request = HalRequest.Apply(new LightState(true, new RgbColor(1, 2, 3), 42));

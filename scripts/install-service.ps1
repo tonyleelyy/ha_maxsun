@@ -5,18 +5,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$scriptDir = $PSScriptRoot
-$scriptIsInPublish = Test-Path (Join-Path $scriptDir "ha_maxsun.dll")
-$root = if ($scriptIsInPublish) { $scriptDir } else { Split-Path -Parent $scriptDir }
-$publish = if ([IO.Path]::IsPathRooted($PublishDirectory)) {
-    $PublishDirectory
-}
-elseif ($scriptIsInPublish -and $PublishDirectory -eq "publish") {
-    $scriptDir
-}
-else {
-    Join-Path $root $PublishDirectory
-}
+$root = Split-Path -Parent $PSScriptRoot
+$publish = if ([IO.Path]::IsPathRooted($PublishDirectory)) { $PublishDirectory } else { Join-Path $root $PublishDirectory }
 $logDir = Join-Path $publish "logs"
 $installLog = Join-Path $logDir "install-service.log"
 

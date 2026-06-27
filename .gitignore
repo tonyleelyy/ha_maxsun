@@ -2,8 +2,6 @@ bin/
 obj/
 publish/
 logs/
-vendor/*
-!vendor/README.md
 appsettings.json
 *.user
 *.suo

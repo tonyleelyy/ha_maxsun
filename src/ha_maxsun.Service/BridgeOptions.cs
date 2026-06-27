@@ -23,7 +23,6 @@ internal sealed class BridgeOptions
         var json = File.ReadAllText(configPath);
         var options = JsonSerializer.Deserialize<BridgeOptions>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web))
             ?? throw new InvalidOperationException("Configuration file is empty.");
-        options.Hal.ApplyBundledRuntimePreference(configPath);
         options.Validate(configPath, requireHomeAssistant);
         return options;
     }
@@ -75,43 +74,7 @@ internal sealed class HalOptions
     public string AuraSdkDirectory { get; set; } = @"C:\Program Files\ASUS\AuraSDK";
     public string MaxsunHalDirectory { get; set; } = @"C:\Program Files\MaxSun\LightControlModule\Aac_MaxSunEneLight";
     public string EneHalDirectory { get; set; } = @"C:\Program Files\ENE\Aac_ENE RGB HAL\x64";
-    public bool PreferBundledRuntime { get; set; } = true;
     public int HelperTimeoutSeconds { get; set; } = 20;
-
-    public void ApplyBundledRuntimePreference(string configPath)
-    {
-        if (!PreferBundledRuntime)
-        {
-            return;
-        }
-
-        var configDirectory = Path.GetDirectoryName(Path.GetFullPath(configPath));
-        var candidates = new[]
-        {
-            Path.Combine(AppContext.BaseDirectory, "vendor"),
-            configDirectory is null ? null : Path.Combine(configDirectory, "vendor"),
-            Path.Combine(Directory.GetCurrentDirectory(), "vendor")
-        };
-
-        foreach (var vendorRoot in candidates.Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase))
-        {
-            if (!Directory.Exists(vendorRoot))
-            {
-                continue;
-            }
-
-            AuraSdkDirectory = UseBundledPath(vendorRoot, @"ASUS\AuraSDK", AuraSdkDirectory);
-            MaxsunHalDirectory = UseBundledPath(vendorRoot, @"MaxSun\LightControlModule\Aac_MaxSunEneLight", MaxsunHalDirectory);
-            EneHalDirectory = UseBundledPath(vendorRoot, @"ENE\Aac_ENE RGB HAL\x64", EneHalDirectory);
-            return;
-        }
-    }
-
-    private static string UseBundledPath(string vendorRoot, string relativePath, string fallback)
-    {
-        var path = Path.Combine(vendorRoot, relativePath);
-        return Directory.Exists(path) ? path : fallback;
-    }
 }
 
 internal sealed class BridgeRuntimeOptions
