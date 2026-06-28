@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$PublishDirectory = "publish",
     [string]$ServiceName = "ha_maxsun",
     [ValidateSet("zh-CN", "en-US")]

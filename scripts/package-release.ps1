@@ -25,6 +25,18 @@ function Copy-BatchFile {
     [IO.File]::WriteAllText($Destination, $text, [Text.Encoding]::ASCII)
 }
 
+function Copy-PowerShellScript {
+    param(
+        [string]$Source,
+        [string]$Destination
+    )
+
+    $text = Get-Content -LiteralPath $Source -Raw
+    $text = $text -replace "\r?\n", "`r`n"
+    $utf8Bom = [Text.UTF8Encoding]::new($true)
+    [IO.File]::WriteAllText($Destination, $text, $utf8Bom)
+}
+
 $sdks = @(dotnet --list-sdks)
 if ($sdks.Count -eq 0) {
     throw ".NET 10 SDK is required to create a self-contained release package."
@@ -82,7 +94,7 @@ foreach ($scriptName in @(
     "test-hardware.ps1",
     "uninstall-service.ps1"
 )) {
-    Copy-Item -LiteralPath (Join-Path $root "scripts\$scriptName") -Destination $releaseScripts -Force
+    Copy-PowerShellScript (Join-Path $root "scripts\$scriptName") (Join-Path $releaseScripts $scriptName)
 }
 
 Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $zip -Force

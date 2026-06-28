@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$PublishDirectory = "publish",
     [string]$ConfigPath,
     [ValidateSet("zh-CN", "en-US")]
