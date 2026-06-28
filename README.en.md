@@ -19,7 +19,7 @@ Currently tested only on MS-Terminator B760M D4 WIFI/WIFI6/WIFI6E motherboards.
 
 ## One-Click Install
 
-Download the GitHub Release zip and extract it to a stable directory, for example `D:\ha_maxsun`. If you cloned the source tree instead, the setup wizard will try to build `publish\` automatically when it is missing.
+Download the GitHub Release zip and extract it to a stable directory, for example `D:\ha_maxsun`. Release packages are Windows x64 self-contained builds, so normal users do not need to install the .NET Runtime or .NET SDK. If you cloned the source tree instead, the setup wizard will try to build `publish\` automatically when it is missing.
 
 You need:
 
@@ -27,7 +27,7 @@ You need:
 - [Maxsun RGB software](https://www.maxsun.com.cn/2024/1024/6320.html) or an equivalent driver package installed, without requiring it to start with Windows, to provide ASUS/ENE/Maxsun HAL components
 - Home Assistant long-lived access token
 - Administrator privileges
-- .NET 10 SDK only when building automatically from source; Release zip users do not need to build
+- .NET 10 SDK only when building from source or creating a Release package
 
 ### 1. Configure Home Assistant
 
@@ -53,6 +53,12 @@ To create a token, click your user name in the lower-left corner of Home Assista
 ### 2. Run the Setup Wizard
 
 Double-click this file from the extracted project root:
+
+```text
+install-en.bat
+```
+
+Chinese users can run:
 
 ```text
 install.bat
@@ -97,6 +103,21 @@ Download the new Release zip, stop the service, overwrite the old directory, and
 
 ```powershell
 Stop-Service ha_maxsun
+```
+
+## Creating Release Packages
+
+Maintainers can run this on a Windows x64 machine with the .NET 10 SDK installed:
+
+```powershell
+.\scripts\package-release.ps1 -Version beta
+```
+
+The script creates a self-contained zip and SHA256 file:
+
+```text
+artifacts\ha_maxsun-beta-win-x64.zip
+artifacts\ha_maxsun-beta-win-x64.sha256.txt
 ```
 
 ## Project Layout

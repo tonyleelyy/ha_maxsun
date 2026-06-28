@@ -174,7 +174,9 @@ if (-not (Test-Path $config)) {
 }
 else {
     $configText = Get-Content -LiteralPath $config -Raw
-    $updatedConfigText = $configText.Replace('"helperPath": "MaxsunControl.HalHelper.dll"', '"helperPath": "ha_maxsun.HalHelper.dll"').Replace('"helperPath": "HaMaxsun.HalHelper.dll"', '"helperPath": "ha_maxsun.HalHelper.dll"')
+    $updatedConfigText = $configText.Replace('"helperPath": "MaxsunControl.HalHelper.dll"', '"helperPath": "ha_maxsun.HalHelper.exe"')
+    $updatedConfigText = $updatedConfigText.Replace('"helperPath": "HaMaxsun.HalHelper.dll"', '"helperPath": "ha_maxsun.HalHelper.exe"')
+    $updatedConfigText = $updatedConfigText.Replace('"helperPath": "ha_maxsun.HalHelper.dll"', '"helperPath": "ha_maxsun.HalHelper.exe"')
 
     if ($updatedConfigText -ne $configText) {
         Set-Content -LiteralPath $config -Value $updatedConfigText -Encoding UTF8
