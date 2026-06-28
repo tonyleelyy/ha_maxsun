@@ -27,7 +27,7 @@
 
 - Windows x64
 - 安装[铭瑄 RGB 软件](https://www.maxsun.com.cn/2024/1024/6320.html)或对应驱动包（无需开机自启），用于提供 ASUS/ENE/Maxsun HAL
-- Home Assistant long-lived access token
+- Home Assistant 长期访问令牌
 - 管理员权限
 - 从源码自动构建或制作 Release 包时需要 .NET 10 SDK
 
@@ -50,7 +50,7 @@ homeassistant:
 - `input_boolean.maxsun_motherboard_rgb_available`
 - `light.maxsun_motherboard_rgb`
 
-token 获取方式：在 Home Assistant 左下角点你的用户名，进入个人资料页，拉到最下面的 Long-lived access tokens，新建一个 token。复制后只保存到本机配置文件里，不要提交到 GitHub。
+长期访问令牌获取方式：在 Home Assistant 左下角点你的用户名，进入个人资料页，拉到最下面的“长期访问令牌”（Long-lived access tokens），新建一个令牌。复制后只保存到本机配置文件里，不要提交到 GitHub。
 
 ### 2. 运行安装向导
 
@@ -70,7 +70,7 @@ install-en.bat
 
 - 没有 `publish\` 输出时尝试自动构建
 - 创建或更新 `publish\appsettings.json`
-- 如果没有填 Home Assistant 地址和 token，就在窗口里询问并写入配置
+- 如果没有填 Home Assistant 地址和长期访问令牌，就在窗口里询问并写入配置
 - 停止 `MaxsunSync2` / `MaxsunSyncService`，并把 `MaxsunSyncService` 改为手动启动
 - 检查本机环境和 Home Assistant 实体
 - 依次测试红、绿、蓝、低亮度白、关闭，并让你确认主板灯是否变化
@@ -167,7 +167,7 @@ Get-Content .\publish\logs\bridge-$(Get-Date -Format yyyyMMdd).log -Tail 120
 常见原因：
 
 - `MaxsunSync2.exe` 或 `MaxsunSyncService.exe` 正在运行
-- HA token 填错或过期
+- HA 长期访问令牌填错或过期
 - HA WebSocket URL 不对
 - HA package 没加载，helper 实体不存在
 - ASUS/ENE/Maxsun HAL 没安装或 COM 注册缺失

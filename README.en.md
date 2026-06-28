@@ -48,7 +48,7 @@ These helper entities and the final light should appear:
 - `input_boolean.maxsun_motherboard_rgb_available`
 - `light.maxsun_motherboard_rgb`
 
-To create a token, click your user name in the lower-left corner of Home Assistant, open your profile page, scroll to Long-lived access tokens, and create one. Store it only in the local config file. Do not commit it to GitHub.
+To create a long-lived access token, click your user name in the lower-left corner of Home Assistant, open your profile page, scroll to the Long-lived access tokens section, and create one. Store it only in the local config file. Do not commit it to GitHub.
 
 ### 2. Run the Setup Wizard
 
@@ -68,7 +68,7 @@ Approve the UAC prompt if Windows asks for administrator privileges. The wizard 
 
 - Try to build the project if `publish\` output is missing
 - Create or update `publish\appsettings.json`
-- Ask for the Home Assistant address and token if they are not configured yet
+- Ask for the Home Assistant address and long-lived access token if they are not configured yet
 - Stop `MaxsunSync2` / `MaxsunSyncService`, and set `MaxsunSyncService` to manual startup
 - Check the local environment and Home Assistant entities
 - Test red, green, blue, low-brightness white, and off, asking you to confirm each visible change
@@ -165,7 +165,7 @@ Get-Content .\publish\logs\bridge-$(Get-Date -Format yyyyMMdd).log -Tail 120
 Common causes:
 
 - `MaxsunSync2.exe` or `MaxsunSyncService.exe` is running
-- HA token is wrong or expired
+- HA long-lived access token is wrong or expired
 - HA WebSocket URL is wrong
 - HA package was not loaded, so helper entities do not exist
 - ASUS/ENE/Maxsun HAL is missing or COM registration is broken
