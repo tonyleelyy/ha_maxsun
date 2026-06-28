@@ -14,6 +14,17 @@ $publish = Join-Path $stage "publish"
 $zip = Join-Path $artifacts "$packageName.zip"
 $hashFile = Join-Path $artifacts "$packageName.sha256.txt"
 
+function Copy-BatchFile {
+    param(
+        [string]$Source,
+        [string]$Destination
+    )
+
+    $text = Get-Content -LiteralPath $Source -Raw
+    $text = $text -replace "\r?\n", "`r`n"
+    [IO.File]::WriteAllText($Destination, $text, [Text.Encoding]::ASCII)
+}
+
 $sdks = @(dotnet --list-sdks)
 if ($sdks.Count -eq 0) {
     throw ".NET 10 SDK is required to create a self-contained release package."
@@ -53,8 +64,8 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Copy-Item -LiteralPath (Join-Path $root "appsettings.example.json") -Destination (Join-Path $publish "appsettings.json") -Force
 
-Copy-Item -LiteralPath (Join-Path $root "install.bat") -Destination $stage -Force
-Copy-Item -LiteralPath (Join-Path $root "install-en.bat") -Destination $stage -Force
+Copy-BatchFile (Join-Path $root "install.bat") (Join-Path $stage "install.bat")
+Copy-BatchFile (Join-Path $root "install-en.bat") (Join-Path $stage "install-en.bat")
 Copy-Item -LiteralPath (Join-Path $root "README.md") -Destination $stage -Force
 Copy-Item -LiteralPath (Join-Path $root "README.en.md") -Destination $stage -Force
 Copy-Item -LiteralPath (Join-Path $root "LICENSE") -Destination $stage -Force
