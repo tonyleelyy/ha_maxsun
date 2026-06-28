@@ -44,7 +44,12 @@ $Text = @{
         StoppingService = "正在停止服务 MaxsunSyncService"
         SettingManual = "正在把 MaxsunSyncService 设置为手动启动"
         MaxsunServiceMissing = "未安装 MaxsunSyncService。"
-        RemoveExistingService = "移除已有 {0} 服务"
+        ExistingServiceStep = "检查已有 {0} 服务"
+        ExistingServiceDetected = "检测到系统里已经安装 {0} 服务，当前状态：{1}。"
+        ReplaceExistingService = "输入 y 卸载旧服务并继续重新安装，或按 Enter 中止"
+        RemoveExistingService = "卸载已有 {0} 服务"
+        ExistingServiceKept = "已保留现有 {0} 服务，安装已中止。"
+        ExistingServiceRemoveFailed = "已尝试卸载 {0} 服务，但服务仍然存在。请手动卸载后重试。"
         CheckHaEntities = "检查 Home Assistant 实体"
         HaNotLoaded = "通常这表示 homeassistant\maxsun_motherboard_rgb.yaml 还没有被 Home Assistant 加载。"
         ContinueAnyway = "输入 y 继续硬件测试和服务安装，或按 Enter 中止"
@@ -86,7 +91,12 @@ $Text = @{
         StoppingService = "Stopping service MaxsunSyncService"
         SettingManual = "Setting MaxsunSyncService startup type to Manual"
         MaxsunServiceMissing = "MaxsunSyncService is not installed."
-        RemoveExistingService = "Remove existing {0} service"
+        ExistingServiceStep = "Check existing {0} service"
+        ExistingServiceDetected = "The {0} service is already installed. Current status: {1}."
+        ReplaceExistingService = "Type y to uninstall the old service and reinstall, or press Enter to cancel"
+        RemoveExistingService = "Uninstall existing {0} service"
+        ExistingServiceKept = "The existing {0} service was kept. Setup has been cancelled."
+        ExistingServiceRemoveFailed = "Tried to uninstall the {0} service, but it still exists. Uninstall it manually and try again."
         CheckHaEntities = "Check Home Assistant entities"
         HaNotLoaded = "Usually this means homeassistant\maxsun_motherboard_rgb.yaml has not been loaded by Home Assistant yet."
         ContinueAnyway = "Type y to continue hardware test and service installation anyway"
@@ -388,6 +398,13 @@ function Remove-ExistingBridgeService {
         return
     }
 
+    Write-Step (Get-Text "ExistingServiceStep" @($ServiceName))
+    Write-Host (Get-Text "ExistingServiceDetected" @($ServiceName, $service.Status))
+    $replace = Read-Host (Get-Text "ReplaceExistingService")
+    if (-not (Test-YesAnswer $replace)) {
+        throw (Get-Text "ExistingServiceKept" @($ServiceName))
+    }
+
     Invoke-ToolScript (Get-Text "RemoveExistingService" @($ServiceName)) (Join-Path $root "scripts\uninstall-service.ps1") @("-ServiceName", $ServiceName)
 
     for ($i = 0; $i -lt 10; $i++) {
@@ -397,6 +414,8 @@ function Remove-ExistingBridgeService {
 
         Start-Sleep -Seconds 1
     }
+
+    throw (Get-Text "ExistingServiceRemoveFailed" @($ServiceName))
 }
 
 function Invoke-HomeAssistantCheck {

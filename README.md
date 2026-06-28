@@ -21,15 +21,14 @@
 
 ## 一键安装
 
-推荐下载 GitHub Release 压缩包，解压到固定目录，例如 `D:\ha_maxsun`。Release 包是 Windows x64 self-contained 构建，普通用户不需要安装 .NET Runtime 或 .NET SDK。如果你是从源码 clone，本向导也会在缺少 `publish\` 输出时尝试自动构建。
+推荐下载 GitHub Release 压缩包，解压到固定目录，例如 `D:\ha_maxsun`。
 
 安装前需要：
 
-- Windows x64
+- Windows x64 & 正常运行的Home Assistant
 - 安装[铭瑄 RGB 软件](https://www.maxsun.com.cn/2024/1024/6320.html)或对应驱动包（无需开机自启），用于提供 ASUS/ENE/Maxsun HAL
 - Home Assistant 长期访问令牌
 - 管理员权限
-- 从源码自动构建或制作 Release 包时需要 .NET 10 SDK
 
 ### 1. 配置 Home Assistant
 
@@ -50,7 +49,7 @@ homeassistant:
 - `input_boolean.maxsun_motherboard_rgb_available`
 - `light.maxsun_motherboard_rgb`
 
-长期访问令牌获取方式：在 Home Assistant 左下角点你的用户名，进入个人资料页，拉到最下面的“长期访问令牌”（Long-lived access tokens），新建一个令牌。复制后只保存到本机配置文件里，不要提交到 GitHub。
+长期访问令牌获取方式：在 Home Assistant 左下角点你的用户名，进入个人资料页，进入“安全”页面，拉到最下面的“长期访问令牌”（Long-lived access tokens），新建一个令牌，复制。
 
 ### 2. 运行安装向导
 
@@ -66,11 +65,10 @@ install.bat
 install-en.bat
 ```
 
-如果弹出 UAC，请允许管理员权限。向导会自动完成：
+如果弹出 UAC，请允许管理员权限。向导会引导完成：
 
-- 没有 `publish\` 输出时尝试自动构建
 - 创建或更新 `publish\appsettings.json`
-- 如果没有填 Home Assistant 地址和长期访问令牌，就在窗口里询问并写入配置
+- 引导填写 Home Assistant 地址和长期访问令牌
 - 停止 `MaxsunSync2` / `MaxsunSyncService`，并把 `MaxsunSyncService` 改为手动启动
 - 检查本机环境和 Home Assistant 实体
 - 依次测试红、绿、蓝、低亮度白、关闭，并让你确认主板灯是否变化
@@ -101,25 +99,10 @@ Get-Content .\publish\logs\bridge-$(Get-Date -Format yyyyMMdd).log -Tail 80
 
 ## 更新版本
 
-下载新版 Release 压缩包，停止服务后覆盖原目录，再运行 `install.bat`。向导会自动卸载旧服务并重新安装。
+下载新版 Release 压缩包，停止服务后覆盖原目录，再运行 `install.bat`。如果系统里已经安装 `ha_maxsun` 服务，向导会询问是否卸载旧服务并重新安装。
 
 ```powershell
 Stop-Service ha_maxsun
-```
-
-## 制作 Release 包
-
-维护者在装有 .NET 10 SDK 的 Windows x64 机器上运行：
-
-```powershell
-.\scripts\package-release.ps1 -Version beta
-```
-
-脚本会生成 self-contained 压缩包和 SHA256 文件：
-
-```text
-artifacts\ha_maxsun-beta-win-x64.zip
-artifacts\ha_maxsun-beta-win-x64.sha256.txt
 ```
 
 ## 项目结构

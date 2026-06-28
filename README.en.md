@@ -19,15 +19,14 @@ Currently tested only on MS-Terminator B760M D4 WIFI/WIFI6/WIFI6E motherboards.
 
 ## One-Click Install
 
-Download the GitHub Release zip and extract it to a stable directory, for example `D:\ha_maxsun`. Release packages are Windows x64 self-contained builds, so normal users do not need to install the .NET Runtime or .NET SDK. If you cloned the source tree instead, the setup wizard will try to build `publish\` automatically when it is missing.
+Download the GitHub Release zip and extract it to a stable directory, for example `D:\ha_maxsun`.
 
 You need:
 
-- Windows x64
+- Windows x64 and a working Home Assistant instance
 - [Maxsun RGB software](https://www.maxsun.com.cn/2024/1024/6320.html) or an equivalent driver package installed, without requiring it to start with Windows, to provide ASUS/ENE/Maxsun HAL components
 - Home Assistant long-lived access token
 - Administrator privileges
-- .NET 10 SDK only when building from source or creating a Release package
 
 ### 1. Configure Home Assistant
 
@@ -48,7 +47,7 @@ These helper entities and the final light should appear:
 - `input_boolean.maxsun_motherboard_rgb_available`
 - `light.maxsun_motherboard_rgb`
 
-To create a long-lived access token, click your user name in the lower-left corner of Home Assistant, open your profile page, scroll to the Long-lived access tokens section, and create one. Store it only in the local config file. Do not commit it to GitHub.
+To create a long-lived access token, click your user name in the lower-left corner of Home Assistant, open your profile page, open the Security page, scroll to the Long-lived access tokens section, create a new token, and copy it.
 
 ### 2. Run the Setup Wizard
 
@@ -64,11 +63,10 @@ Chinese users can run:
 install.bat
 ```
 
-Approve the UAC prompt if Windows asks for administrator privileges. The wizard will:
+Approve the UAC prompt if Windows asks for administrator privileges. The wizard will guide you through:
 
-- Try to build the project if `publish\` output is missing
 - Create or update `publish\appsettings.json`
-- Ask for the Home Assistant address and long-lived access token if they are not configured yet
+- Entering the Home Assistant address and long-lived access token
 - Stop `MaxsunSync2` / `MaxsunSyncService`, and set `MaxsunSyncService` to manual startup
 - Check the local environment and Home Assistant entities
 - Test red, green, blue, low-brightness white, and off, asking you to confirm each visible change
@@ -99,25 +97,10 @@ Uninstall the service:
 
 ## Updating
 
-Download the new Release zip, stop the service, overwrite the old directory, and run `install.bat` again. The wizard will remove and reinstall the service.
+Download the new Release zip, stop the service, overwrite the old directory, and run `install.bat` again. If `ha_maxsun` is already installed, the wizard will ask whether to uninstall the old service and reinstall it.
 
 ```powershell
 Stop-Service ha_maxsun
-```
-
-## Creating Release Packages
-
-Maintainers can run this on a Windows x64 machine with the .NET 10 SDK installed:
-
-```powershell
-.\scripts\package-release.ps1 -Version beta
-```
-
-The script creates a self-contained zip and SHA256 file:
-
-```text
-artifacts\ha_maxsun-beta-win-x64.zip
-artifacts\ha_maxsun-beta-win-x64.sha256.txt
 ```
 
 ## Project Layout
